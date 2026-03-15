@@ -1,7 +1,19 @@
-// middleware.js
-// Protects the /app route — redirects to home page if not signed in
+import { withAuth } from "next-auth/middleware";
+import { NextResponse } from "next/server";
 
-export { default } from "next-auth/middleware";
+export default withAuth(
+  function middleware(req) {
+    return NextResponse.next();
+  },
+  {
+    callbacks: {
+      authorized: ({ token }) => !!token,
+    },
+    pages: {
+      signIn: "/",
+    },
+  }
+);
 
 export const config = {
   matcher: ["/app"],
