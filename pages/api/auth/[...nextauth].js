@@ -2,6 +2,10 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
 const useSecureCookies = process.env.NEXTAUTH_URL?.startsWith("https://");
+if (!useSecureCookies && process.env.NODE_ENV === "production") {
+  console.error("NEXTAUTH_URL must be set to a secure (https) URL in production.");
+  throw new Error("Invalid NEXTAUTH_URL configuration.");
+}
 
 export const authOptions = {
   providers: [
@@ -40,6 +44,7 @@ export const authOptions = {
         ? "__Secure-next-auth.callback-url"
         : "next-auth.callback-url",
       options: {
+        httpOnly: true,
         sameSite: "lax",
         path: "/",
         secure: useSecureCookies,

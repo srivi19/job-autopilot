@@ -32,7 +32,9 @@ export default async function handler(req, res) {
   // ── Guard: Airia API key must be set ────────────────────────────────────────
   if (!process.env.AIRIA_API_KEY) {
     console.error("AIRIA_API_KEY is not set");
-    return res.status(500).json({ error: "Server misconfiguration: AIRIA_API_KEY is not set" });
+    return res.status(500).json({
+      error: "Server misconfiguration: Missing Airia API key. Please contact support."
+    });
   }
 
   // ── Input validation ─────────────────────────────────────────────────────────
@@ -122,6 +124,7 @@ Please complete ALL of the following steps:
       return res.status(response.status).json({
         error: `Airia API error (${response.status})`,
         detail: errText,
+        message: "Failed to process your request. Please try again later."
       });
     }
 
@@ -146,7 +149,7 @@ Please complete ALL of the following steps:
     if (!rawText) {
       console.error("No text content found in Airia response:", data);
       return res.status(500).json({
-        error: "Unexpected Airia response shape — check Railway logs for key names",
+        error: "Unexpected response from Airia API. Please contact support.",
         detail: JSON.stringify(data).slice(0, 500),
       });
     }
@@ -160,7 +163,7 @@ Please complete ALL of the following steps:
     } catch (parseErr) {
       console.error("JSON parse failed. Raw text:", rawText);
       return res.status(500).json({
-        error: "Agent returned invalid JSON",
+        error: "Invalid response format from Airia API. Please contact support.",
         detail: rawText.slice(0, 500),
       });
     }

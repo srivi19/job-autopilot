@@ -1,4 +1,8 @@
 export default async function handler(req, res) {
+  if (process.env.NODE_ENV === "production") {
+    return res.status(403).json({ error: "Testing endpoint is disabled in production." });
+  }
+
   const key = process.env.AIRIA_API_KEY;
   const pipelineId = process.env.AIRIA_PIPELINE_ID;
   const maskedKey = key ? `${key.slice(0, 8)}...${key.slice(-4)} (length: ${key.length})` : "NOT SET";
