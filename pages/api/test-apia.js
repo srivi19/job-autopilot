@@ -1,9 +1,7 @@
 export default async function handler(req, res) {
   const key = process.env.AIRIA_API_KEY;
   const pipelineId = process.env.AIRIA_PIPELINE_ID;
-  const maskedKey = key
-    ? `${key.slice(0, 8)}...${key.slice(-4)} (length: ${key.length})`
-    : "NOT SET";
+  const maskedKey = key ? `${key.slice(0, 8)}...${key.slice(-4)} (length: ${key.length})` : "NOT SET";
   try {
     const response = await fetch(
       `https://api.airia.ai/v2/PipelineExecution/${pipelineId}`,
@@ -27,8 +25,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ keyPreview: maskedKey, error: err.message });
   }
 }
-```
-
-Commit it → wait for Railway to redeploy → then visit:
-```
-https://job-autopilot-production-f33b.up.railway.app/api/test-airia
