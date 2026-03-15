@@ -1,8 +1,7 @@
-// pages/api/auth/[...nextauth].js
-// Google OAuth — requests Gmail + Calendar scopes so the MCP servers can act on the user's behalf
-
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+
+const useSecureCookies = process.env.NEXTAUTH_URL?.startsWith("https://");
 
 export const authOptions = {
   providers: [
@@ -11,25 +10,60 @@ export const authOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       authorization: {
         params: {
-          // Request offline access so we get a refresh token
           access_type: "offline",
           prompt: "consent",
           scope: [
             "openid",
             "email",
             "profile",
-            // Gmail — needed for the Gmail MCP to create drafts
             "https://www.googleapis.com/auth/gmail.compose",
-            // Google Calendar — needed for the Calendar MCP to create events
             "https://www.googleapis.com/auth/calendar.events",
           ].join(" "),
         },
       },
     }),
   ],
+  cookies: {
+    sessionToken: {
+      name: useSecureCookies
+        ? "__Secure-next-auth.session-token"
+        : "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: useSecureCookies,
+      },
+    },
+    callbackUrl: {
+      name: useSecureCookies
+        ? "__Secure-next-auth.callback-url"
+        : "next-auth.callback-url",
+      options: {
+        sameSite: "lax",
+        path: "/",
+        secure: useSecureCookies,
+      },
+    },
+    csrfToken: {
+      name: useSecureCookies
+        ? "__Host-next-auth.csrf-token"
+        : "next-auth.csrf-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: useSecureCookies,
+      },
+    },
+  },
+
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
+  },
 
   callbacks: {
-    // Persist the Google access token and refresh token in the JWT
     async jwt({ token, account }) {
       if (account) {
         token.accessToken = account.access_token;
@@ -37,16 +71,13 @@ export const authOptions = {
         token.accessTokenExpires = account.expires_at * 1000;
       }
 
-      // Return the token if it hasn't expired yet
       if (Date.now() < token.accessTokenExpires) {
         return token;
       }
 
-      // Access token has expired — attempt to refresh it
       return await refreshAccessToken(token);
     },
 
-    // Expose the access token to the client session so pages/api/agent.js can use it
     async session({ session, token }) {
       session.accessToken = token.accessToken;
       session.error = token.error;
@@ -55,11 +86,13 @@ export const authOptions = {
   },
 
   pages: {
-    signIn: "/", // Redirect to landing page on sign-in
+    signIn: "/",
   },
+
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV !== "production",
 };
 
-// Refresh an expired Google access token using the refresh token
 async function refreshAccessToken(token) {
   try {
     const url =
@@ -73,7 +106,6 @@ async function refreshAccessToken(token) {
 
     const response = await fetch(url, { method: "POST" });
     const refreshed = await response.json();
-
     if (!response.ok) throw refreshed;
 
     return {

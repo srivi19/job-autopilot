@@ -81,7 +81,11 @@ export default function Landing() {
               <span style={{ fontFamily: "'Syne',sans-serif", fontWeight: 700, fontSize: "16px", letterSpacing: "-0.02em" }}>Job Autopilot</span>
             </div>
             <button
+<<<<<<< HEAD
               onClick={() => signIn("google", { callbackUrl: "/app" })}
+=======
+              onClick={() => signIn("google", { callbackUrl: `${window.location.origin}/app` })}
+>>>>>>> dc35a031ee47cb98c22c55c2a22bcbfc23298e1c
               disabled={status === "loading"}
               style={{ padding: "9px 20px", background: "linear-gradient(135deg,#6346d2,#3b82f6)", borderRadius: "8px", fontSize: "13px", fontWeight: 500, color: "#fff", border: "none", cursor: "pointer" }}
             >
@@ -102,7 +106,11 @@ export default function Landing() {
               Paste a LinkedIn job URL and your resume. Claude scores your fit, writes a tailored cover letter, saves it to Gmail, and blocks time on your calendar — in seconds.
             </p>
             <button
+<<<<<<< HEAD
               onClick={() => signIn("google", { callbackUrl: "/app" })}
+=======
+              onClick={() => signIn("google", { callbackUrl: `${window.location.origin}/app` })}
+>>>>>>> dc35a031ee47cb98c22c55c2a22bcbfc23298e1c
               style={{ padding: "14px 36px", background: "linear-gradient(135deg,#6346d2,#3b82f6)", borderRadius: "10px", fontSize: "15px", fontWeight: 500, color: "#fff", border: "none", cursor: "pointer", boxShadow: "0 0 40px rgba(99,70,210,0.35)" }}
             >
               Get started with Google →
