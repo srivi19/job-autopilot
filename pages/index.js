@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { useSession, signIn } from "next-auth/react";
 import { useRouter } from "next/router";
 import Head from "next/head";
+import AiriaChatbot from "../components/AiriaChatbot";
 
 export default function Landing() {
   const { data: session, status } = useSession();
@@ -171,6 +172,10 @@ export default function Landing() {
             <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.2)" }}>Airia Hackathon 2026 · srivi19</span>
           </footer>
         </div>
+      </div>
+
+      <div style={{ position: "fixed", top: "0", right: "0", width: "300px", height: "300px", background: "radial-gradient(circle,rgba(99,70,210,0.18) 0%,transparent 70%)", zIndex: 10, pointerEvents: "none" }}>
+        <AiriaChatbot />
       </div>
     </>
   );
