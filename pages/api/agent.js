@@ -103,74 +103,29 @@ Please complete ALL of the following steps:
 
   try {
     // ── Call Airia PipelineExecution endpoint ──────────────────────────────────
+    const gatewayUrl = process.env.AIRIA_GATEWAY_URL;
+    const pipelineId = process.env.AIRIA_PIPELINE_ID;
+
     const response = await fetch(
-      `https://api.airia.ai/v2/PipelineExecution/${process.env.AIRIA_PIPELINE_ID}`,
+      `${gatewayUrl}/v2/PipelineExecution/${pipelineId}`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-API-KEY": process.env.AIRIA_API_KEY,
         },
-        body: JSON.stringify({
-          userInput,
-          asyncOutput: false, // synchronous — wait for full response
-        }),
+        body: JSON.stringify({ userInput: req.body.userInput, asyncOutput: false }),
       }
     );
 
     if (!response.ok) {
-      const errText = await response.text();
-      console.error("Airia API error:", response.status, errText);
-      return res.status(response.status).json({
-        error: `Airia API error (${response.status})`,
-        detail: errText,
-        message: "Failed to process your request. Please try again later."
-      });
+      throw new Error("Network response was not ok");
     }
 
     const data = await response.json();
-
-    // Log response shape in dev to help identify the correct output key
-    if (process.env.NODE_ENV !== "production") {
-      console.log("Airia response keys:", Object.keys(data));
-      console.log("Airia response:", JSON.stringify(data).slice(0, 300));
-    }
-
-    // Airia returns the agent output — try common response key names in order
-    const rawText =
-      data.result ??
-      data.output ??
-      data.content ??
-      data.text ??
-      data.message ??
-      data.response ??
-      (typeof data === "string" ? data : null);
-
-    if (!rawText) {
-      console.error("No text content found in Airia response:", data);
-      return res.status(500).json({
-        error: "Unexpected response from Airia API. Please contact support.",
-        detail: JSON.stringify(data).slice(0, 500),
-      });
-    }
-
-    // Strip accidental markdown fences before JSON parsing
-    const cleanJson = rawText.replace(/```json|```/g, "").trim();
-
-    let parsed;
-    try {
-      parsed = JSON.parse(cleanJson);
-    } catch (parseErr) {
-      console.error("JSON parse failed. Raw text:", rawText);
-      return res.status(500).json({
-        error: "Invalid response format from Airia API. Please contact support.",
-        detail: rawText.slice(0, 500),
-      });
-    }
-
-    return res.status(200).json(parsed);
+    res.status(200).json(data);
   } catch (error) {
-    console.error("Agent error:", error);
-    return res.status(500).json({ error: "Agent failed", detail: error.message });
+    console.error("Error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 }

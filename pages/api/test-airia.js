@@ -6,9 +6,10 @@ export default async function handler(req, res) {
   const key = process.env.AIRIA_API_KEY;
   const pipelineId = process.env.AIRIA_PIPELINE_ID;
   const maskedKey = key ? `${key.slice(0, 8)}...${key.slice(-4)} (length: ${key.length})` : "NOT SET";
+  const gatewayUrl = process.env.AIRIA_GATEWAY_URL;
   try {
     const response = await fetch(
-      `https://api.airia.ai/v2/PipelineExecution/${pipelineId}`,
+      `${gatewayUrl}/v2/PipelineExecution/${pipelineId}`,
       {
         method: "POST",
         headers: {
